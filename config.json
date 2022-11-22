@@ -1,0 +1,15 @@
+{
+    "name"                  : "Wanode176",
+    "desc"                  : "Whatsapp Rest API",
+    "sessionName"           : "sesi",
+    "levelLog"              : "fatal",
+    "logFileName"           : "loge.json",
+    "appUrl"                : "localhost",
+    "port"                  : 8000,
+    "mongodb"               : "mongodb+srv://kipli:rahasia1@singapur.lk6gx.mongodb.net/?retryWrites=true&w=majority",
+    "defaultCountryCode"    : 62,
+    "downloadMedia"         : true,
+    "downloadFolder"        : "media",
+    "webhook"               : "https://webhook.site/0aa8e96b-5ad0-4080-b098-926ce06dccf5",
+    "notifTo"               : "628562603077"
+  }

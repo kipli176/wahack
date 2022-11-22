@@ -1,0 +1,7 @@
+{
+    "ignore": [
+        "session_*/" ,
+        "downloaded_media/" ,
+        "node_modules/"  
+    ]
+}

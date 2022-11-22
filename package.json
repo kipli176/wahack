@@ -1,0 +1,34 @@
+{
+    "name": "wahack",
+    "version": "1.0.0",
+    "description": "Intip Whatsapp Pasanganmu",
+    "main": "app.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "node app.js",
+      "start:dev": "nodemon app.js"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/kipli176/wahack.git"
+    },
+    "bugs": {
+      "url": "https://github.com/kipli176/wahack/issues"
+    },
+    "homepage": "https://github.com/kipli176/wahack",
+    "author": "kipli176",
+    "license": "MIT",
+    "dependencies": {
+      "@adiwajshing/baileys": "^4.4.0",
+      "@adiwajshing/keyed-db": "^0.2.4", 
+      "express": "^4.17.3", 
+      "pino": "^8.4.1",
+      "ejs": "^3.1.7", 
+      "qrcode-terminal": "^0.12.0",
+      "qrcode": "^1.5.1"
+    },
+    "devDependencies": {
+      "nodemon": "^2.0.20"
+    }
+  }
+  
