@@ -1,31 +1,35 @@
 "use strict";
-const { default: makeWASocket, DisconnectReason,  makeInMemoryStore, useMultiFileAuthState, downloadMediaMessage } = require("@adiwajshing/baileys")
+const { default: makeWASocket, DisconnectReason, makeInMemoryStore, useMultiFileAuthState, downloadMediaMessage } = require("@adiwajshing/baileys")
 const QRCode = require('qrcode')
 const fs = require("fs")
 const { writeFile } = require('fs/promises')
+const path = require('path')
 const loge = require('pino')
 const express = require("express")
 const http = require("http")
-let config = JSON.parse(fs.readFileSync('./config.json'))
+const config = JSON.parse(fs.readFileSync('./config.json'))
+const rawdata = JSON.parse(fs.readFileSync('db.json', 'utf8'));
 const port = config.port;
 const app = express();
 const server = http.createServer(app);
 
 const doReplies = !process.argv.includes('--no-reply')
 const useStore = !process.argv.includes('--no-store')
-app.use(express.json());
-app.use(
-    express.urlencoded({
-        extended: true,
-    })
-);
+app.use(express.json())
+app.use('/downloaded_media', express.static(path.join(__dirname, 'downloaded_media')));
+app.use(express.urlencoded({ extended: true }));
+const low = require('lowdb')
+const FileSync = require('lowdb/adapters/FileSync');
+const adapter = new FileSync('db.json')
+const db = low(adapter)
+
 app.set('views', '.');
 app.set('view engine', 'ejs')
 const store = useStore ? makeInMemoryStore({ logeer: loge().child({ level: config.levelLog, stream: 'store' }) }) : undefined
 const connectWa = async (notif = null, restart = false) => {
     const { state, saveCreds } = await useMultiFileAuthState('session_' + config.sessionName)
     const conn = makeWASocket({
-        logeer: loge({ level: config.levelLog }),
+        // logeer: loge({ level: config.levelLog }),
         auth: state,
         printQRInTerminal: true,
         browser: [config.desc, "MacOS", "3.0"],
@@ -54,9 +58,9 @@ const connectWa = async (notif = null, restart = false) => {
                     console.log('Server Ready ✓');
                     if (config.notifTo.length > 0) {
                         if (notif) {
-                            await conn.sendMessage(phoneNumberFormatter(config.notifTo), { text: notif });
+                            console.log(notif);
                         } else {
-                            await conn.sendMessage(phoneNumberFormatter(config.notifTo), { text: `*${config.name}* Ready ✓` });
+                            console.log(`*${config.name}* Ready ✓`);
                         }
 
                         if (restart) {
@@ -74,23 +78,39 @@ const connectWa = async (notif = null, restart = false) => {
                 saveCreds()
             }
 
+            if (events.call) {
+                console.log('recv call event', events.call)
+                let nomor
+                let pesan
+                if (events.call[0].status == 'accept') {
+                    nomor = events.call[0].from.split('@')[0]
+                    pesan = 'Call'
+                    console.log('Terima telepon dari ', events.call[0].from.split('@')[0])
+                    var result = db.get('data').push({ no: nomor, text: pesan }).last().assign({ id: Date.now() }).write()
+                } else if (events.call[0].status == 'timeout') {
+                    nomor = events.call[0].from.split('@')[0]
+                    pesan = 'Missed Call'
+                    console.log('Tidak diangkat dari ', events.call[0].from.split('@')[0])
+                    var result = db.get('data').push({ no: nomor, text: pesan }).last().assign({ id: Date.now() }).write()
+                }
+
+                console.log(result)
+            }
+
             if (events['messages.upsert']) {
                 const upsert = events['messages.upsert']
 
                 console.log('recv messages ', JSON.stringify(upsert, undefined, 2))
-                console.log('Ada ' + upsert.messages[0]['messageStubType'])
                 for (const msg of upsert.messages) {
                     conn.readMessages([msg.key])
                     let fileUrl = await downloadMedia(msg)
 
                     if (fileUrl) {
                         console.log('file url : ' + fileUrl)
-                        await conn.sendMessage(phoneNumberFormatter(config.notifTo), { text: fileUrl });
-
+                        const result = db.get('data').push({ no: msg.key.remoteJid.split('@')[0], text: fileUrl }).last().assign({ id: Date.now() }).write()
+                        console.log(result)
                     }
-                    // if(upsert.messages.messageStubType){
-                    // }
-                    if (!msg.key.fromMe && doReplies) { 
+                    if (!msg.key.fromMe && doReplies) {
                         const { type } = upsert
                         let message
                         if (msg.message) {
@@ -100,7 +120,7 @@ const connectWa = async (notif = null, restart = false) => {
                                 } else if (msg.message.templateButtonReplyMessage) {
                                     message = msg.message.templateButtonReplyMessage.selectedId
                                 } else if (msg.message.extendedTextMessage) {
-                                    message = msg.message.extendedTextMessage.text  
+                                    message = msg.message.extendedTextMessage.text
                                 } else if (msg.message.locationMessage) {
                                     message = msg.message.locationMessage.degreesLatitude + ', ' + msg.message.locationMessage.degreesLongitude
                                 } else if (msg.message.contactMessage) {
@@ -108,25 +128,18 @@ const connectWa = async (notif = null, restart = false) => {
                                 } else {
                                     message = ''
                                 }
-                            } else if (type == 'imageMessage' && msg.message.imageMessage.caption) {
-                                message = msg.message.imageMessage.caption
-                            } else if (type == 'documentMessage' && msg.message.documentMessage.caption) {
-                                message = msg.message.documentMessage.caption
-                            } else if (type == 'videoMessage' && msg.message.videoMessage.caption) {
-                                message = msg.message.videoMessage.caption
-                            } else if (type == 'extendedTextMessage' && msg.message.extendedTextMessage.text) {
-                                message = msg.message.extendedTextMessage.text
-                            } else if (type == 'buttonsResponseMessage' && msg.message.buttonsResponseMessage.selectedButtonId) {
-                                message = msg.message.buttonsResponseMessage.selectedButtonId
-                            } else if (type == 'templateButtonReplyMessage' && msg.message.templateButtonReplyMessage.selectedId) {
-                                message = msg.message.templateButtonReplyMessage.selectedId
                             } else {
                                 message = ''
                             }
                         } else {
                             message = ''
-                        } 
+                        }
                         console.log(message)
+                        if (message != '') {
+                            db.defaults({ data: [] }).write()
+                            const result = db.get('data').push({ no: msg.key.remoteJid.split('@')[0], text: message }).last().assign({ id: Date.now() }).write()
+                            console.log(result)
+                        }
                     }
                 }
             }
@@ -143,33 +156,28 @@ const connectWa = async (notif = null, restart = false) => {
             qrcode: qrcodes,
         });
     });
+    app.get("/data", async (req, res) => {
+        console.log(Object.keys(rawdata.data).length)
+        res.status(200).render('data', {
+            datane: rawdata.data,
+        });
+    });
 
     return conn
 }
-connectWa().catch(err => console.log(err))
-const phoneNumberFormatter = function (number) { 
-    let formatted = number.replace(/\D/g, ''); 
-    if (formatted.startsWith('0')) {
-        formatted = cfg.defaultCountryCode + formatted.substr(1);
-    } 
-    if (!formatted.endsWith('@s.whatsapp.net')) {
-        formatted += '@s.whatsapp.net';
-    }
-    return formatted;
-}
 const downloadMedia = async (msg) => {
     if (config.downloadMedia) {
-        console.log(msg)
+        // console.log(msg)
         if (msg.message) {
-            let messageType = Object.keys(msg.message)[0] ?? false  
+            let messageType = Object.keys(msg.message)[0] ?? false
             switch (messageType) {
                 case 'imageMessage':
                 case 'videoMessage':
                 case 'audioMessage':
                 case 'stickerMessage':
                 case 'documentMessage':
-                    let ext = msg.message[messageType].mimetype.split('/')[1].split(';')[0] 
-                    const buffer = await downloadMediaMessage(msg, 'buffer', {}) 
+                    let ext = msg.message[messageType].mimetype.split('/')[1].split(';')[0]
+                    const buffer = await downloadMediaMessage(msg, 'buffer', {})
                     if (!fs.existsSync('./downloaded_' + config.downloadFolder + '/')) {
                         fs.mkdirSync('./downloaded_' + config.downloadFolder + '/');
                     }
@@ -186,6 +194,7 @@ const downloadMedia = async (msg) => {
         return false
     }
 }
+connectWa().catch(err => console.log(err))
 server.listen(port, function () {
     console.log(`App running on http://${config.appUrl}:${port}`);
 })

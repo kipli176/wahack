@@ -1,0 +1,25 @@
+ 
+		<meta name="viewport" content="width=device-width,initial-scale=1">
+	<script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.4.0/css/responsive.dataTables.min.css">
+<table id="example" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th>waktu</th><th>nomor</th><th>pesan</th>
+        </tr>
+    </thead>
+    <% for(var i=0; i < datane.length; i++) { %>
+       <tr>
+        <td><%= new Date(datane[i].id ).toISOString().slice(0, 19).replace('T', ' ') %></td>
+        <td><%= datane[i].no.slice(0, -8)+'xxxxxxx' %></td>
+         <td><%= datane[i].text %></td>
+       </tr>
+    <% } %>
+    </table>
+    <script>
+        $(document).ready(function () {
+            $('#example').DataTable({responsive: true});
+        });
+    </script>

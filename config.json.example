@@ -1,6 +1,6 @@
 {
     "name"                  : "WaHack",
-    "desc"                  : "Perangkat",
+    "desc"                  : "Intip Whatsapp",
     "sessionName"           : "sesi",
     "levelLog"              : "fatal", 
     "appUrl"                : "localhost",
@@ -8,5 +8,5 @@
     "defaultCountryCode"    : 62,
     "downloadMedia"         : true,
     "downloadFolder"        : "media",
-    "notifTo"               : "628562603077"
+    "notifTo"               : "628xxxxxxxx"
   }
