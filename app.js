@@ -45,7 +45,7 @@ const connectWa = async (notif = null, restart = false) => {
                 if (connection === 'close') {
                     console.log('Server Ready ✓')
                     // restore session
-                    if (lastDisconnect.error?.output?.statusCode !== DisconnectReason.logeedOut) {
+                    if (lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut) {
                         connectWa()
                     } else if (lastDisconnect.error?.output?.statusCode !== DisconnectReason.connectionClosed) {
                         connectWa()
@@ -143,25 +143,19 @@ const connectWa = async (notif = null, restart = false) => {
                     }
                 }
             }
-        })
+        }) 
 
-    app.get("/info", async (req, res) => {
-        res.status(200).json({
-            status: true,
-            response: conn.user,
-        });
-    });
-    app.get("/qr", async (req, res) => {
-        res.status(200).render('qrcode', {
-            qrcode: qrcodes,
-        });
-    });
-    app.get("/data", async (req, res) => {
-        console.log(Object.keys(rawdata.data).length)
-        res.status(200).render('data', {
-            datane: rawdata.data,
-        });
-    });
+    app.get("/", async (req, res) => {
+        if (conn.user == undefined) {
+            res.status(200).render('qrcode', {
+                qrcode: qrcodes,
+            });
+        } else {
+            res.status(200).render('data', {
+                datane: rawdata.data,
+            });
+        }
+    }) 
 
     return conn
 }

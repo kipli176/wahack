@@ -20,9 +20,19 @@
     </style>
 </head>
 <body>
-    <h1>Scan<h1>
+    <h1> <%= judul%><h1>
             <div class="container">
-                <img src="<%= qrcode %>" alt="" id="qrcode_box" />
-            </div>
+                <img src="" alt="" id="qrcode_box" />
+            </div> 
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io();
+
+    socket.on('qr', function(msg){
+      console.log(msg);
+      document.getElementById("qrcode_box").src= msg;
+    });
+  </script>
 </body>
 </html>

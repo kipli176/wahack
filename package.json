@@ -20,13 +20,13 @@
   "license": "MIT",
   "dependencies": {
     "@adiwajshing/baileys": "^4.4.0",
-    "@adiwajshing/keyed-db": "^0.2.4", 
+    "@adiwajshing/keyed-db": "^0.2.4",
     "ejs": "^3.1.7",
     "express": "^4.17.3",
     "lowdb": "^1.0.0",
     "pino": "^8.4.1",
     "qrcode": "^1.5.1",
-    "qrcode-terminal": "^0.12.0"
+    "qrcode-terminal": "^0.12.0" 
   },
   "devDependencies": {
     "nodemon": "^2.0.20"
