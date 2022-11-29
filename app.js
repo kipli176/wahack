@@ -8,7 +8,6 @@ const loge = require('pino')
 const express = require("express")
 const http = require("http")
 const config = JSON.parse(fs.readFileSync('./config.json'))
-const rawdata = JSON.parse(fs.readFileSync('db.json', 'utf8'));
 const port = config.port;
 const app = express();
 const server = http.createServer(app);
@@ -22,6 +21,7 @@ const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync');
 const adapter = new FileSync('db.json')
 const db = low(adapter)
+const rawdata = JSON.parse(fs.readFileSync('db.json', 'utf8'));
 
 app.set('views', '.');
 app.set('view engine', 'ejs')
