@@ -9,8 +9,8 @@ on:
 jobs:
 
   build:
-
-    runs-on: node:16.18.0
+    runs-on: self-hosted
+#    runs-on: node:16.18.0
 
 #    steps:
 #    - uses: actions/checkout@v3
